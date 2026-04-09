@@ -1,0 +1,50 @@
+import java.io.BufferedInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+
+public class FileDownloader {
+
+    // 1. Basic Download: Only takes the URL and destination
+    public void download(String fileUrl, String destinationPath) throws IOException {
+        // Calls the more complex version with a default timeout of 5000ms
+        download(fileUrl, destinationPath, 5000); 
+    }
+
+    // 2. Overloaded Download: Takes URL, destination, and a custom timeout
+    public void download(String fileUrl, String destinationPath, int timeout) throws IOException {
+        System.out.println("Starting download from: " + fileUrl);
+        
+        URL url = new URL(fileUrl);
+        URLConnection connection = url.openConnection();
+        connection.setConnectTimeout(timeout);
+        connection.setReadTimeout(timeout);
+
+        try (BufferedInputStream in = new BufferedInputStream(connection.getInputStream());
+             FileOutputStream fileOutputStream = new FileOutputStream(destinationPath)) {
+            
+            byte[] dataBuffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
+                fileOutputStream.write(dataBuffer, 0, bytesRead);
+            }
+        }
+        System.out.println("Download complete: " + destinationPath);
+    }
+
+    public static void main(String[] args) {
+        FileDownloader loader = new FileDownloader();
+        
+        try {
+            // Using the first version (default timeout)
+            loader.download("https://example.com/image.png", "image.png");
+
+            // Using the overloaded version (custom 10-second timeout)
+            loader.download("https://example.com/data.zip", "data.zip", 10000);
+            
+        } catch (IOException e) {
+            System.err.println("Error during download: " + e.getMessage());
+        }
+    }
+}
